@@ -1,7 +1,7 @@
 {
-  "domain": "google_fit_i",
+  "domain": "google_fit",
   "name": "Google Fit",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "documentation": "https://github.com/Norero/home-assistant-google_fit",
   "dependencies": [],
   "codeowners": [
