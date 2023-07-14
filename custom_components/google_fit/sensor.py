@@ -367,6 +367,9 @@ class GoogleFitHeightSensor(GoogleFitSensor):
     @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
     def update(self):
         """Extracts the relevant data points for from the Fitness API."""
+        if not self._client:
+            return
+
         height_datasources = self._get_datasources('com.google.height')
 
         height_datapoints = {}
@@ -428,6 +431,9 @@ class GoogleFitHeartRateSensor(GoogleFitSensor):
     @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
     def update(self):
         """Extracts the relevant data points for from the Fitness API."""
+        if not self._client:
+            return
+
         heartrate_datasources = self._get_datasources('com.google.heart_rate.bpm')
 
         heart_datapoints = {}
@@ -486,6 +492,8 @@ class GoogleFitStepsSensor(GoogleFitSensor):
     @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
     def update(self):
         """Extracts the relevant data points for from the Fitness API."""
+        if not self._client:
+            return
 
         values = []
         for point in self._get_dataset(self.DATA_SOURCE)["point"]:
@@ -520,6 +528,8 @@ class GoogleFitMoveTimeSensor(GoogleFitSensor):
     @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
     def update(self):
         """Extracts the relevant data points for from the Fitness API."""
+        if not self._client:
+            return
 
         values = []
         for point in self._get_dataset(self.DATA_SOURCE)["point"]:
@@ -554,6 +564,9 @@ class GoogleFitCaloriesSensor(GoogleFitSensor):
     @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
     def update(self):
         """Extracts the relevant data points for from the Fitness API."""
+        if not self._client:
+            return
+
         values = []
         for point in self._get_dataset(self.DATA_SOURCE)["point"]:
             if int(point["startTimeNanos"]) > _today_dataset_start():
@@ -587,6 +600,9 @@ class GoogleFitDistanceSensor(GoogleFitSensor):
     @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
     def update(self):
         """Extracts the relevant data points for from the Fitness API."""
+        if not self._client:
+            return
+
         values = []
         for point in self._get_dataset(self.DATA_SOURCE)["point"]:
             if int(point["startTimeNanos"]) > _today_dataset_start():
@@ -619,6 +635,8 @@ class GoogleFitSleepSensor(GoogleFitSensor):
     @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
     def update(self):
         """Extracts the relevant data points for from the Fitness API."""
+        if not self._client:
+            return
 
         yesterday = datetime.now().replace(hour=17,minute=0,second=0,microsecond=0)
         yesterday = yesterday - timedelta(days=1)
