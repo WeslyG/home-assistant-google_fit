@@ -206,6 +206,7 @@ class GoogleFitSensor(entity.Entity):
         self._name = name
         self._state = const.STATE_UNKNOWN
         self._last_updated = const.STATE_UNKNOWN
+        self._attributes = {}
 
     @property
     def state(self):
