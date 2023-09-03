@@ -56,10 +56,10 @@ DISTANCE_MI = 'distance (mi)'
 STEPS = 'steps'
 MOVE_TIME = 'move time'
 CALORIES = 'calories'
-SLEEP = 'sleep'
+#SLEEP = 'sleep'
 MEDITATION = 'meditation'
-HEARTRATE = 'heart rate'
-BLOOD_PRESSURE = 'blood pressure'
+# HEARTRATE = 'heart rate'
+#BLOOD_PRESSURE = 'blood pressure'
 TOKEN_FILE = ''
 
 # Endpoint scopes required for the sensor.
@@ -67,11 +67,11 @@ TOKEN_FILE = ''
 
 SCOPES = [
     'https://www.googleapis.com/auth/fitness.body.read',
-    'https://www.googleapis.com/auth/fitness.sleep.read',
-    'https://www.googleapis.com/auth/fitness.heart_rate.read',
+    # 'https://www.googleapis.com/auth/fitness.sleep.read',
+    # 'https://www.googleapis.com/auth/fitness.heart_rate.read',
     'https://www.googleapis.com/auth/fitness.activity.read',
     'https://www.googleapis.com/auth/fitness.location.read',
-    'https://www.googleapis.com/auth/fitness.blood_pressure.read'
+    # 'https://www.googleapis.com/auth/fitness.blood_pressure.read'
     ]
 
 
@@ -201,16 +201,17 @@ def setup_platform(hass: HomeAssistant, config, add_devices, discovery_info=None
 
     add_devices([GoogleFitWeightLbsSensor(client,name),
         GoogleFitWeightKGSensor(client, name),
-        GoogleFitHeartRateSensor(client, name),
+        # GoogleFitHeartRateSensor(client, name),
         GoogleFitHeightSensor(client, name),
         GoogleFitStepsSensor(client, name),
-        GoogleFitSleepSensor(client, name),
+        # GoogleFitSleepSensor(client, name),
         GoogleFitMeditationSensor(client, name),
         GoogleFitMoveTimeSensor(client, name),
         GoogleFitCaloriesSensor(client, name),
         GoogleFitDistanceKmSensor(client, name),
         GoogleFitDistanceMiSensor(client, name),
-        GoogleFitBloodPressureSensor(client, name),], True)
+        # GoogleFitBloodPressureSensor(client, name),
+        ], True)
 
 
 class GoogleFitSensor(entity.Entity):
@@ -274,7 +275,7 @@ class GoogleFitSensor(entity.Entity):
     @property
     def extra_state_attributes(self):
         """Return device specific state attributes."""
-        return self._attributes
+        return {}
 
 
     @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
@@ -504,50 +505,50 @@ class GoogleFitHeightSensor(GoogleFitSensor):
             _LOGGER.debug("Last height %s", last_height)
             self._attributes = {}
 
-class GoogleFitHeartRateSensor(GoogleFitSensor):
-    DATA_SOURCE = "derived:com.google.heart_rate.bpm:com.google.android.gms:" \
-        "merge_heart_rate_bpm"
+# class GoogleFitHeartRateSensor(GoogleFitSensor):
+#     DATA_SOURCE = "derived:com.google.heart_rate.bpm:com.google.android.gms:" \
+#         "merge_heart_rate_bpm"
 
-    @property
-    def unit_of_measurement(self):
-        """Returns the unit of measurement."""
-        return 'BPM'
+#     @property
+#     def unit_of_measurement(self):
+#         """Returns the unit of measurement."""
+#         return 'BPM'
 
-    @property
-    def icon(self):
-        """Return the icon."""
-        return 'mdi:heart'
+#     @property
+#     def icon(self):
+#         """Return the icon."""
+#         return 'mdi:heart'
 
-    @property
-    def _name_suffix(self):
-        """Returns the name suffix of the sensor."""
-        return HEARTRATE
+#     @property
+#     def _name_suffix(self):
+#         """Returns the name suffix of the sensor."""
+#         return HEARTRATE
 
-    @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
-    def update(self):
-        """Extracts the relevant data points for from the Fitness API."""
-        if not self._client:
-            return
+#     @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
+#     def update(self):
+#         """Extracts the relevant data points for from the Fitness API."""
+#         if not self._client:
+#             return
 
-        values = {}
-        for datapoint in self._get_dataset_from_last_update(self.DATA_SOURCE)["point"]:
-            datapoint_value = datapoint["value"][0]["fpVal"]
-            datapoint_value_ts= datapoint["startTimeNanos"]
-            values[datapoint_value_ts] = datapoint_value
+#         values = {}
+#         for datapoint in self._get_dataset_from_last_update(self.DATA_SOURCE)["point"]:
+#             datapoint_value = datapoint["value"][0]["fpVal"]
+#             datapoint_value_ts= datapoint["startTimeNanos"]
+#             values[datapoint_value_ts] = datapoint_value
 
-        time_updates = list(values.keys())
-        time_updates.sort(reverse=True)
-        if not time_updates:
-            self._attributes = {}
-            return None
+#         time_updates = list(values.keys())
+#         time_updates.sort(reverse=True)
+#         if not time_updates:
+#             self._attributes = {}
+#             return None
         
-        last_time_update = time_updates[0]
-        last_heartrate = values[last_time_update]
+#         last_time_update = time_updates[0]
+#         last_heartrate = values[last_time_update]
 
-        self._last_updated = round(int(last_time_update) / 1000000000)
-        self._state = last_heartrate
-        _LOGGER.debug("Last Heart Rate %s at %s", last_heartrate, self._last_updated)
-        self._attributes = {}
+#         self._last_updated = round(int(last_time_update) / 1000000000)
+#         self._state = last_heartrate
+#         _LOGGER.debug("Last Heart Rate %s at %s", last_heartrate, self._last_updated)
+#         self._attributes = {}
 
 class GoogleFitStepsSensor(GoogleFitSensor):
     DATA_SOURCE = "derived:com.google.step_count.delta:" \
@@ -724,69 +725,69 @@ class GoogleFitDistanceMiSensor(GoogleFitSensor):
         _LOGGER.debug("Distance %s", self._state)
         self._attributes = {}
 
-class GoogleFitSleepSensor(GoogleFitSensor):
-    @property
-    def _name_suffix(self):
-        """Returns the name suffix of the sensor."""
-        return SLEEP
+# class GoogleFitSleepSensor(GoogleFitSensor):
+#     @property
+#     def _name_suffix(self):
+#         """Returns the name suffix of the sensor."""
+#         return SLEEP
 
-    @property
-    def unit_of_measurement(self):
-        """Returns the unit of measurement."""
-        return SLEEP
+#     @property
+#     def unit_of_measurement(self):
+#         """Returns the unit of measurement."""
+#         return SLEEP
 
-    @property
-    def icon(self):
-        """Return the icon."""
-        return 'mdi:clock'
+#     @property
+#     def icon(self):
+#         """Return the icon."""
+#         return 'mdi:clock'
 
-    @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
-    def update(self):
-        """Extracts the relevant data points for from the Fitness API."""
-        if not self._client:
-            return
+#     @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
+#     def update(self):
+#         """Extracts the relevant data points for from the Fitness API."""
+#         if not self._client:
+#             return
 
-        yesterday = datetime.now().replace(hour=17,minute=0,second=0,microsecond=0)
-        yesterday = yesterday - timedelta(days=1)
-        starttime = yesterday.isoformat("T") + "Z"
-        today = datetime.now().replace(hour=11,minute=0,second=0,microsecond=0)
-        endtime = today.isoformat("T") + "Z"
-        _LOGGER.debug("Starttime %s, Endtime %s", starttime, endtime)
-        sleep_dataset =  self._client.users().sessions().list(userId='me',fields='session',startTime=starttime,endTime=endtime).execute()
-        starts = []
-        ends = []
-        deep_sleep = []
-        light_sleep = []
-        _LOGGER.debug("Sleep dataset %s", sleep_dataset)
-        for point in sleep_dataset["session"]:
-            if int(point["activityType"]) == 72 :
-                starts.append(int(point["startTimeMillis"]))
-                ends.append(int(point["endTimeMillis"]))
-                if  point["name"].startswith('Deep'):
-                    deep_sleep_start = datetime.fromtimestamp(int(point["startTimeMillis"]) / 1000)
-                    deep_sleep_end = datetime.fromtimestamp(int(point["endTimeMillis"]) / 1000)
-                    _LOGGER.debug("Deep Sleep dataset Total %s", (deep_sleep_end - deep_sleep_start))
-                    deep_sleep.append(deep_sleep_end - deep_sleep_start)
-                elif  point["name"].startswith('Light'):
-                    light_sleep_start = datetime.fromtimestamp(int(point["startTimeMillis"]) / 1000)
-                    light_sleep_end = datetime.fromtimestamp(int(point["endTimeMillis"]) / 1000)
-                    _LOGGER.debug("Light Sleep dataset Total %s", (light_sleep_end - light_sleep_start))
-                    light_sleep.append(light_sleep_end - light_sleep_start)
+#         yesterday = datetime.now().replace(hour=17,minute=0,second=0,microsecond=0)
+#         yesterday = yesterday - timedelta(days=1)
+#         starttime = yesterday.isoformat("T") + "Z"
+#         today = datetime.now().replace(hour=11,minute=0,second=0,microsecond=0)
+#         endtime = today.isoformat("T") + "Z"
+#         _LOGGER.debug("Starttime %s, Endtime %s", starttime, endtime)
+#         sleep_dataset =  self._client.users().sessions().list(userId='me',fields='session',startTime=starttime,endTime=endtime).execute()
+#         starts = []
+#         ends = []
+#         deep_sleep = []
+#         light_sleep = []
+#         _LOGGER.debug("Sleep dataset %s", sleep_dataset)
+#         for point in sleep_dataset["session"]:
+#             if int(point["activityType"]) == 72 :
+#                 starts.append(int(point["startTimeMillis"]))
+#                 ends.append(int(point["endTimeMillis"]))
+#                 if  point["name"].startswith('Deep'):
+#                     deep_sleep_start = datetime.fromtimestamp(int(point["startTimeMillis"]) / 1000)
+#                     deep_sleep_end = datetime.fromtimestamp(int(point["endTimeMillis"]) / 1000)
+#                     _LOGGER.debug("Deep Sleep dataset Total %s", (deep_sleep_end - deep_sleep_start))
+#                     deep_sleep.append(deep_sleep_end - deep_sleep_start)
+#                 elif  point["name"].startswith('Light'):
+#                     light_sleep_start = datetime.fromtimestamp(int(point["startTimeMillis"]) / 1000)
+#                     light_sleep_end = datetime.fromtimestamp(int(point["endTimeMillis"]) / 1000)
+#                     _LOGGER.debug("Light Sleep dataset Total %s", (light_sleep_end - light_sleep_start))
+#                     light_sleep.append(light_sleep_end - light_sleep_start)
         
-        if len(starts) != 0 or len(ends) != 0:
-            bed_time = datetime.fromtimestamp(round(min(starts) / 1000))
-            wake_up_time = datetime.fromtimestamp(round(max(ends) / 1000))
-            total_sleep = wake_up_time - bed_time
-            total_deep_sleep = sum(deep_sleep,timedelta())
-            total_light_sleep = sum(light_sleep, timedelta())
-            state_dict = dict({'bed_time': str(bed_time), 'wake_up_time': str(wake_up_time), 'sleep': str(total_sleep), 'deep_sleep': str(total_deep_sleep), 'light_sleep': str(total_light_sleep)})
-            self._state = str(total_sleep)
-            self._attributes = state_dict
-            self._last_updated = time.time()
-        else:    
-            self._state = ""
-            self._attributes = {}
-            self._last_updated = time.time()
+#         if len(starts) != 0 or len(ends) != 0:
+#             bed_time = datetime.fromtimestamp(round(min(starts) / 1000))
+#             wake_up_time = datetime.fromtimestamp(round(max(ends) / 1000))
+#             total_sleep = wake_up_time - bed_time
+#             total_deep_sleep = sum(deep_sleep,timedelta())
+#             total_light_sleep = sum(light_sleep, timedelta())
+#             state_dict = dict({'bed_time': str(bed_time), 'wake_up_time': str(wake_up_time), 'sleep': str(total_sleep), 'deep_sleep': str(total_deep_sleep), 'light_sleep': str(total_light_sleep)})
+#             self._state = str(total_sleep)
+#             self._attributes = state_dict
+#             self._last_updated = time.time()
+#         else:    
+#             self._state = ""
+#             self._attributes = {}
+#             self._last_updated = time.time()
 
 class GoogleFitMeditationSensor(GoogleFitSensor):
     @property
@@ -843,50 +844,50 @@ class GoogleFitMeditationSensor(GoogleFitSensor):
             self._attributes = {}
             self._last_updated = time.time()
 
-class GoogleFitBloodPressureSensor(GoogleFitSensor):
-    DATA_SOURCE = "derived:com.google.blood_pressure:com.google.android.gms:" \
-        "merged"
+# class GoogleFitBloodPressureSensor(GoogleFitSensor):
+    # DATA_SOURCE = "derived:com.google.blood_pressure:com.google.android.gms:" \
+    #     "merged"
 
-    @property
-    def _name_suffix(self):
-        """Returns the name suffix of the sensor."""
-        return BLOOD_PRESSURE
+    # @property
+    # def _name_suffix(self):
+    #     """Returns the name suffix of the sensor."""
+    #     return BLOOD_PRESSURE
 
-    @property
-    def unit_of_measurement(self):
-        """Returns the unit of measurement."""
-        return 'mmHg (sys/dia)'
+    # @property
+    # def unit_of_measurement(self):
+    #     """Returns the unit of measurement."""
+    #     return 'mmHg (sys/dia)'
 
-    @property
-    def icon(self):
-        """Return the icon."""
-        return 'mdi:heart-pulse'
+    # @property
+    # def icon(self):
+    #     """Return the icon."""
+    #     return 'mdi:heart-pulse'
 
-    @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
-    def update(self):
-        """Extracts the relevant data points for from the Fitness API."""
-        if not self._client:
-            return
+    # @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_UPDATES)
+    # def update(self):
+    #     """Extracts the relevant data points for from the Fitness API."""
+    #     if not self._client:
+    #         return
 
-        values = {}
-        for datapoint in self._get_dataset_from_last_update(self.DATA_SOURCE)["point"]:
-            datapoint_value = datapoint["value"][0]["fpVal"]
-            diastolic_datapoint_value = datapoint["value"][1]["fpVal"]
-            bloodpressure_string = str(datapoint_value) + "/" + str(diastolic_datapoint_value)
-            datapoint_value_ts = datapoint["startTimeNanos"]
-            values[datapoint_value_ts] = bloodpressure_string
+    #     values = {}
+    #     for datapoint in self._get_dataset_from_last_update(self.DATA_SOURCE)["point"]:
+    #         datapoint_value = datapoint["value"][0]["fpVal"]
+    #         diastolic_datapoint_value = datapoint["value"][1]["fpVal"]
+    #         bloodpressure_string = str(datapoint_value) + "/" + str(diastolic_datapoint_value)
+    #         datapoint_value_ts = datapoint["startTimeNanos"]
+    #         values[datapoint_value_ts] = bloodpressure_string
 
-        time_updates = list(values.keys())
-        time_updates.sort(reverse=True)
-        if not time_updates:
-            self._attributes = {}
-            return None
+    #     time_updates = list(values.keys())
+    #     time_updates.sort(reverse=True)
+    #     if not time_updates:
+    #         self._attributes = {}
+    #         return None
 
-        last_time_update = time_updates[0]
-        last_bloodpressure = values[last_time_update]
-        self._last_updated = round(int(last_time_update) / 1000000000)
-        self._state = last_bloodpressure
-        _LOGGER.debug("Last BloodPressure selfstate %s at %s", self._state, self._last_updated)
-        self._attributes = {}
-        self._attributes['sys'] = datapoint_value
-        self._attributes['dia'] = diastolic_datapoint_value
+    #     last_time_update = time_updates[0]
+    #     last_bloodpressure = values[last_time_update]
+    #     self._last_updated = round(int(last_time_update) / 1000000000)
+    #     self._state = last_bloodpressure
+    #     _LOGGER.debug("Last BloodPressure selfstate %s at %s", self._state, self._last_updated)
+    #     self._attributes = {}
+    #     self._attributes['sys'] = datapoint_value
+    #     self._attributes['dia'] = diastolic_datapoint_value
