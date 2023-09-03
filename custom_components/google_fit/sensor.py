@@ -11,8 +11,8 @@ from homeassistant.helpers.event import track_time_change
 from homeassistant.util.dt import utc_from_timestamp
 
 REQUIREMENTS = [
-    'google-api-python-client==1.6.4',
-    'oauth2client==4.0.0',
+    'google-api-python-client==2.97.0',
+    'oauth2client==4.1.3',
     'httplib2'
 ]
 
@@ -68,12 +68,13 @@ TOKEN_FILE = ''
 # Endpoint scopes required for the sensor.
 # Read more: https://developers.google.com/fit/rest/v1/authorization
 
-SCOPES = ['https://www.googleapis.com/auth/fitness.body.read',
+SCOPES = [
+    'https://www.googleapis.com/auth/fitness.body.read',
     'https://www.googleapis.com/auth/fitness.sleep.read',
     'https://www.googleapis.com/auth/fitness.heart_rate.read',
     'https://www.googleapis.com/auth/fitness.activity.read',
     'https://www.googleapis.com/auth/fitness.location.read',
-    'https://www.googleapis.com/auth/fitness.blood_pressure.read',
+    'https://www.googleapis.com/auth/fitness.blood_pressure.read'
     ]
 
 
