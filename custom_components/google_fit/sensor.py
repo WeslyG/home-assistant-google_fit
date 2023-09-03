@@ -3,6 +3,7 @@ import os
 import time
 import voluptuous
 from datetime import datetime, timedelta
+from homeassistant.core import HomeAssistant
 from homeassistant import const
 from homeassistant import util
 from homeassistant.helpers import config_validation
@@ -32,16 +33,12 @@ MIN_TIME_BETWEEN_UPDATES = timedelta(minutes=8)
 SENSOR_NAME = '{} {}'
 
 
-# # Define schema of sensor.
+# Define schema of sensor.
 PLATFORM_SCHEMA = config_validation.PLATFORM_SCHEMA.extend({
     voluptuous.Required(CONF_CLIENT_ID): config_validation.string,
     voluptuous.Required(CONF_CLIENT_SECRET): config_validation.string,
 
-    voluptuous.Optional(
-        const.CONF_NAME,
-        default=DEFAULT_NAME
-    ): config_validation.string,
-
+    voluptuous.Optional(const.CONF_NAME,default=DEFAULT_NAME): config_validation.string,
 })
 
 # Define base notifications.
@@ -111,18 +108,19 @@ def _get_client(token_file):
         return service
 
 
-def setup(hass, config):
+def setup(hass: HomeAssistant, config):
     """Set up the Google Fit platform."""
     name = config.get(const.CONF_NAME)
     TOKEN_FILE = '.{}_{}.token'.format(name,SENSOR)
     token_file = hass.config.path(TOKEN_FILE)
+    _LOGGER.debug("SETUP: before do_authentication")
     if not os.path.exists(token_file):
         return do_authentication(hass, config)
 
     return True
 
 
-def do_authentication(hass, config):
+def do_authentication(hass: HomeAssistant, config):
     """Notify user of actions and authenticate.
 
     Notify user of user_code and verification_url then poll until we have an
@@ -131,12 +129,16 @@ def do_authentication(hass, config):
     from oauth2client import client as oauth2client
     from oauth2client import file as oauth2file
 
+    _LOGGER.debug("DO_AUTH: imports complete")
+
     oauth = oauth2client.OAuth2WebServerFlow(
         client_id=config[CONF_CLIENT_ID],
         client_secret=config[CONF_CLIENT_SECRET],
         scope=SCOPES,
         redirect_uri='Home-Assistant.io',
     )
+
+    _LOGGER.debug("DO_AUTH: oauth complete")
 
     try:
         dev_flow = oauth.step1_get_device_and_user_codes()
@@ -183,14 +185,20 @@ def do_authentication(hass, config):
     return True
 
 
-def setup_platform(hass, config, add_devices, discovery_info=None):
+def setup_platform(hass: HomeAssistant, config, add_devices, discovery_info=None):
     """Adds sensor platform to the list of platforms."""
+    _LOGGER.debug("google fit load start")
     setup(hass, config)
+    _LOGGER.debug("setup complete")
     name = config.get(const.CONF_NAME)
+    _LOGGER.debug("config complete")
     TOKEN_FILE = '.{}_{}.token'.format(name,SENSOR)
+    _LOGGER.debug("TOKEN_FILE complete")
     token_file = hass.config.path(TOKEN_FILE)
+    _LOGGER.debug("token_file complete")
     client = _get_client(token_file)
-    
+    _LOGGER.debug("client complete")
+
     add_devices([GoogleFitWeightLbsSensor(client,name),
         GoogleFitWeightKGSensor(client, name),
         GoogleFitHeartRateSensor(client, name),
@@ -316,7 +324,6 @@ class GoogleFitSensor(entity.Entity):
             get(userId=API_USER_ID, dataSourceId=source, datasetId=dataset). \
             execute()
 
-
 class GoogleFitWeightKGSensor(GoogleFitSensor):
     @property
     def unit_of_measurement(self):
@@ -376,7 +383,6 @@ class GoogleFitWeightKGSensor(GoogleFitSensor):
             self._state = last_weight
             _LOGGER.debug("Last weight %s", last_weight)
             self._attributes = {}
-
 
 class GoogleFitWeightLbsSensor(GoogleFitSensor):
     @property
@@ -438,7 +444,6 @@ class GoogleFitWeightLbsSensor(GoogleFitSensor):
             _LOGGER.debug("Last weight %s", last_weight)
             self._attributes = {}
 
-
 class GoogleFitHeightSensor(GoogleFitSensor):
     @property
     def unit_of_measurement(self):
@@ -499,7 +504,6 @@ class GoogleFitHeightSensor(GoogleFitSensor):
             _LOGGER.debug("Last height %s", last_height)
             self._attributes = {}
 
-
 class GoogleFitHeartRateSensor(GoogleFitSensor):
     DATA_SOURCE = "derived:com.google.heart_rate.bpm:com.google.android.gms:" \
         "merge_heart_rate_bpm"
@@ -545,7 +549,6 @@ class GoogleFitHeartRateSensor(GoogleFitSensor):
         _LOGGER.debug("Last Heart Rate %s at %s", last_heartrate, self._last_updated)
         self._attributes = {}
 
-
 class GoogleFitStepsSensor(GoogleFitSensor):
     DATA_SOURCE = "derived:com.google.step_count.delta:" \
         "com.google.android.gms:estimated_steps"
@@ -580,7 +583,6 @@ class GoogleFitStepsSensor(GoogleFitSensor):
         self._state = sum(values)
         _LOGGER.debug("Steps %s", self._state)
         self._attributes = {}
-
 
 class GoogleFitMoveTimeSensor(GoogleFitSensor):
     DATA_SOURCE = "derived:com.google.active_minutes:" \
@@ -617,7 +619,6 @@ class GoogleFitMoveTimeSensor(GoogleFitSensor):
         _LOGGER.debug("Move time %s", self._state)
         self._attributes = {}
 
-
 class GoogleFitCaloriesSensor(GoogleFitSensor):
     DATA_SOURCE = "derived:com.google.calories.expended:" \
         "com.google.android.gms:merge_calories_expended"
@@ -652,7 +653,6 @@ class GoogleFitCaloriesSensor(GoogleFitSensor):
         self._state = round(sum(values))
         _LOGGER.debug("Calories %s", self._state)
         self._attributes = {}
-
 
 class GoogleFitDistanceKmSensor(GoogleFitSensor):
     DATA_SOURCE = "derived:com.google.distance.delta:" \
@@ -724,8 +724,7 @@ class GoogleFitDistanceMiSensor(GoogleFitSensor):
         _LOGGER.debug("Distance %s", self._state)
         self._attributes = {}
 
-
-class GoogleFitSleepSensor(GoogleFitSensor):   
+class GoogleFitSleepSensor(GoogleFitSensor):
     @property
     def _name_suffix(self):
         """Returns the name suffix of the sensor."""
@@ -763,12 +762,12 @@ class GoogleFitSleepSensor(GoogleFitSensor):
             if int(point["activityType"]) == 72 :
                 starts.append(int(point["startTimeMillis"]))
                 ends.append(int(point["endTimeMillis"]))
-                if  point["name"].startswith('Deep'):   
+                if  point["name"].startswith('Deep'):
                     deep_sleep_start = datetime.fromtimestamp(int(point["startTimeMillis"]) / 1000)
                     deep_sleep_end = datetime.fromtimestamp(int(point["endTimeMillis"]) / 1000)
                     _LOGGER.debug("Deep Sleep dataset Total %s", (deep_sleep_end - deep_sleep_start))
                     deep_sleep.append(deep_sleep_end - deep_sleep_start)
-                elif  point["name"].startswith('Light'):        
+                elif  point["name"].startswith('Light'):
                     light_sleep_start = datetime.fromtimestamp(int(point["startTimeMillis"]) / 1000)
                     light_sleep_end = datetime.fromtimestamp(int(point["endTimeMillis"]) / 1000)
                     _LOGGER.debug("Light Sleep dataset Total %s", (light_sleep_end - light_sleep_start))
@@ -788,7 +787,6 @@ class GoogleFitSleepSensor(GoogleFitSensor):
             self._state = ""
             self._attributes = {}
             self._last_updated = time.time()
-
 
 class GoogleFitMeditationSensor(GoogleFitSensor):
     @property
